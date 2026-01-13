@@ -1,0 +1,150 @@
+# RobotArena Isaac Sim Setup
+
+This repository contains the setup and configuration for running [RobotArena](https://github.com/simpler-env/RobotArena) with NVIDIA Isaac Sim 5.1 using Apptainer (Singularity) containers.
+
+## Overview
+
+This setup provides an isolated containerized environment for running Isaac Sim, which is used for robot simulation and evaluation as part of the RobotArena benchmarking framework. The container setup ensures reproducible environments and easy deployment on HPC systems.
+
+## Repository Structure
+
+```
+robotarena_issacsim/
+├── setup/
+│   ├── install.sh          # Script to download Isaac Sim container
+│   ├── up.sh               # Script to launch the container
+│   ├── cache/              # Container cache directory (auto-created)
+│   ├── logs/               # Isaac Sim logs (auto-created)
+│   └── ov/                 # Omniverse data (auto-created)
+├── issacsim/
+│   └── isaacsim_5.1.sif    # Isaac Sim 5.1 container image
+└── README.md               # This file
+```
+
+## Prerequisites
+
+- **Apptainer/Singularity**: Required for running containers
+- **NVIDIA GPU**: Required for Isaac Sim (with CUDA support)
+- **nvidia-smi**: For GPU verification
+- **SLURM** (optional): If running on an HPC cluster
+
+## Installation
+
+### 1. Download Isaac Sim Container
+
+Run the installation script to pull the Isaac Sim 5.1 container:
+
+```bash
+cd setup
+bash install.sh
+```
+
+This will download the `isaacsim_5.1.sif` container image from NVIDIA's container registry to `issacsim/isaacsim_5.1.sif`.
+
+### 2. Verify Container
+
+Ensure the container file exists:
+
+```bash
+ls -lh issacsim/isaacsim_5.1.sif
+```
+
+## Usage
+
+### Launching the Container
+
+From the `setup/` directory, run:
+
+```bash
+bash up.sh
+```
+
+This script will:
+- Check for GPU availability on the host
+- Create necessary directories (cache, logs, ov)
+- Launch an Apptainer shell with:
+  - GPU support (`--nv`)
+  - Persistent cache bindings
+  - Your workspace mounted at `/workspace`
+  - Isaac Sim logs and Omniverse data directories
+
+### Container Environment
+
+Once inside the container, you'll have:
+- **Working directory**: `/workspace` (maps to `/data/user_data/yjangir/yash`)
+- **Cache**: `/root/.cache` (persists on host)
+- **Logs**: `/root/.nvidia-omniverse/logs` (persists on host)
+- **Omniverse data**: `/root/.local/share/ov` (persists on host)
+
+### Running Isaac Sim
+
+Inside the container, you can run Isaac Sim applications and scripts. The container includes all necessary dependencies and CUDA libraries.
+
+## Integration with RobotArena
+
+This Isaac Sim setup is designed to work with the [RobotArena](https://github.com/simpler-env/RobotArena) benchmarking framework. The RobotArena project provides:
+
+- Robot policy evaluation environments
+- Support for multiple models (CogAct, RoboVLM, Octo, SpatialVLA)
+- Real-to-sim translation capabilities
+- Custom simulation environments
+
+To use this setup with RobotArena:
+
+1. Clone the RobotArena repository to your workspace
+2. Launch this container using `setup/up.sh`
+3. Navigate to your RobotArena directory inside the container
+4. Follow RobotArena's setup instructions for Isaac Sim integration
+
+## Configuration
+
+### Environment Variables
+
+The container inherits your host environment. Key variables that may be useful:
+
+- `APPTAINER_TMPDIR`: Set to `/scratch` for temporary files
+- `LD_LIBRARY_PATH`: Includes NVIDIA libraries
+- GPU-related cache directories (see `.bashrc` for details)
+
+### Custom Bash Configuration
+
+Your personal `.bashrc` is available in the `setup/bashrc` file for reference. The container uses its own shell initialization, but you can source this configuration inside the container if needed:
+
+```bash
+source /workspace/robotarena_issacsim/setup/bashrc
+```
+
+This includes your aliases, conda/mamba setup, cache directory configurations, and other customizations.
+
+## Troubleshooting
+
+### GPU Not Detected
+
+If `nvidia-smi` fails inside the container:
+- Verify GPU is available on the host: `nvidia-smi` (outside container)
+- Ensure you're on a GPU node (if using SLURM)
+- Check that `--nv` flag is being used (it's included in `up.sh`)
+
+### Container Not Found
+
+If you see "Could not find container":
+- Run `bash setup/install.sh` to download the container
+- Verify the path in `up.sh` matches your directory structure
+
+### Permission Issues
+
+If you encounter permission errors:
+- Ensure cache/logs/ov directories are writable
+- Check that your user has access to the workspace directory
+
+## Related Projects
+
+- [RobotArena](https://github.com/simpler-env/RobotArena): Main benchmarking framework
+- [SimplerEnv](https://github.com/simpler-env/SimplerEnv): Simulated manipulation environments
+- [NVIDIA Isaac Sim](https://developer.nvidia.com/isaac-sim): Official Isaac Sim documentation
+
+## Notes
+
+- The container image is large (~10GB+), ensure sufficient disk space
+- First launch may take time as Omniverse initializes
+- Cache directories persist between container runs for faster subsequent launches
