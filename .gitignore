@@ -7,6 +7,10 @@ setup/cache/
 setup/logs/
 setup/ov/
 
+container/
+src/assets/
+
+
 # Python cache (if any Python scripts are added)
 __pycache__/
 *.py[cod]

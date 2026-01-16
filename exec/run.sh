@@ -16,4 +16,4 @@ apptainer exec --nv \
   -B $CONTAINER_PATH/isaac_cache/data:/root/.local/share/ov/data \
   -B $CONTAINER_PATH/isaac_cache/documents:/root/Documents \
   "$CONTAINER_PATH/isaac-lab-2.3.0.sif" \
-  /isaac-sim/python.sh /workspace/project/usda_test.py --enable_cameras --headless
+  /isaac-sim/python.sh /workspace/project/example_scene.py --enable_cameras --headless

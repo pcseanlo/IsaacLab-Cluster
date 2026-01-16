@@ -9,12 +9,23 @@ This setup provides an isolated containerized environment for running Isaac Sim,
 ## Repository Structure
 
 ```
-IssacSim-Cluster/
+IsaacLab-Cluster/
 ├── setup/
-│   ├── install.sh          # Script to download container image
-│   ├── up.sh               # Script to launch the container
-│   └── execute.sh          # Script to execute the command in the container
-└── README.md               # This file
+│   └── install.sh            # Script to download container image
+├── exec/
+│   ├── up.sh                 # Script to launch the container
+│   └── run.sh                # Script to execute the command in the container
+├── src/
+│   ├── assets.zip            # Zip files that contains assets for example scene (unzip before running)
+│   └── example_scene.py      # Example scenes to run with container
+│
+--------------- Created after installation ---------------
+├── container/
+│   ├── isaac-lab-2.3.0.sif   # Container image
+│   └── isaac-cache/          # Caches for run time
+----------------------------------------------------------
+│
+└── README.md                 # Read me
 ```
 
 ## Prerequisites
@@ -31,8 +42,7 @@ IssacSim-Cluster/
 Run the installation script to pull the Isaac Sim 5.1 container:
 
 ```bash
-cd setup
-bash install.sh
+bash setup/install.sh
 ```
 
 This will download the `isaac-lab-2.3.0.sif` container image from NVIDIA's container registry. You change the path inside the script to your deisred download location.
@@ -42,7 +52,7 @@ This will download the `isaac-lab-2.3.0.sif` container image from NVIDIA's conta
 Ensure the container file exists:
 
 ```bash
-ls -lh ${YOUR_DOWNLOAD_PATH}/isaac-lab-2.3.0.sif
+ls -lh conatiner/isaac-lab-2.3.0.sif
 ```
 
 ## Usage
@@ -52,7 +62,7 @@ ls -lh ${YOUR_DOWNLOAD_PATH}/isaac-lab-2.3.0.sif
 We provide 2 running scripts `setup/` directory:
 
 ```bash
-bash up.sh
+bash exec/up.sh
 ```
 
 This script will:
@@ -64,7 +74,7 @@ This script will:
   - Isaac Sim logs and Omniverse data directories
 
 ```bash
-bash execute.sh
+bash exec/run.sh
 ```
 
 This script will:
@@ -78,6 +88,15 @@ This script will:
 
 Once inside the container, you'll have:
 - **Working directory**: `/workspace/project` (maps to your desired binding location)
+- **Kit Cache**: `/isaac-sim/kit/cache` (persists on host)
+- **Kit Data**: `/isaac-sim/kit/data` (persists on host)
+- **Omniverse Cache**: `/root/.cache/ov` (persists on host)
+- **Pip Cache**: `/root/.cache/pip` (persists on host)
+- **Shader Cache**: `/root/.cache/nvidia/GLCache` (persists on host)
+- **Compute Cache**: `/root/.nv/ComputeCache` (persists on host)
+- **Logs**: `/root/.nvidia-omniverse/logs` (persists on host)
+- **Asset Data**: `/root/.local/share/ov/data` (persists on host)
+- **Documents**: `/root/Documents` (persists on host)
 
 
 ### Running Isaac Lab
@@ -113,16 +132,6 @@ The container inherits your host environment. Key variables that may be useful:
 - `APPTAINER_TMPDIR`: Set to `/scratch` for temporary files
 - `LD_LIBRARY_PATH`: Includes NVIDIA libraries
 - GPU-related cache directories (see `.bashrc` for details)
-
-### Custom Bash Configuration
-
-Your personal `.bashrc` is available in the `setup/bashrc` file for reference. The container uses its own shell initialization, but you can source this configuration inside the container if needed:
-
-```bash
-source /workspace/robotarena_issacsim/setup/bashrc
-```
-
-This includes your aliases, conda/mamba setup, cache directory configurations, and other customizations.
 
 ## Troubleshooting
 
