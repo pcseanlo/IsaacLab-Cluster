@@ -1,5 +1,6 @@
 # Go to desire install path
-cd $HOME/user_data/robotarena_issaclab
+mkdir container
+cd container
 
 # Use apptainer to download the image
 apptainer pull isaac-lab-2.3.0.sif docker://nvcr.io/nvidia/isaac-lab:2.3.0
@@ -15,3 +16,5 @@ mkdir -p isaac_cache/data
 mkdir -p isaac_cache/documents
 mkdir -p isaac_cache/kit_data
 mkdir -p project # Place the working files under this folder
+
+cd ..
