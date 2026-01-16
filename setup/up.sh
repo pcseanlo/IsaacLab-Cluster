@@ -2,22 +2,15 @@
 set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SIF="${HERE}/../issacsim/isaacsim_5.1.sif"
-
-# Host folders relative to current dir
-CACHE_HOST="${HERE}/cache"
-LOGS_HOST="${HERE}/logs"
-OV_HOST="${HERE}/ov"
+SIF="${HERE}/isaac-lab-2.3.0.sif"
 
 # Extra bind
-USERDATA_HOST="/data/user_data/yjangir/yash"
-USERDATA_CONT="/workspace"
-
-mkdir -p "$CACHE_HOST" "$LOGS_HOST" "$OV_HOST"
+USERDATA_HOST="${HERE}/project"
+USERDATA_CONT="/workspace/project"
 
 if [[ ! -f "$SIF" ]]; then
   echo "ERROR: Could not find container: $SIF"
-  echo "Make sure isaacsim_5.1.sif is in: $HERE"
+  echo "Make sure isaac-lab-2.3.0.sif is in: $HERE"
   exit 1
 fi
 
@@ -29,16 +22,21 @@ echo "=== Launching apptainer shell ==="
 echo "Dir:      $HERE"
 echo "SIF:      $SIF"
 echo "Binds:"
-echo "  $CACHE_HOST -> /root/.cache"
-echo "  $LOGS_HOST  -> /root/.nvidia-omniverse/logs"
-echo "  $OV_HOST    -> /root/.local/share/ov"
 echo "  $USERDATA_HOST -> $USERDATA_CONT"
-echo
 
 apptainer shell --nv \
-  --bind "${CACHE_HOST}:/root/.cache" \
-  --bind "${LOGS_HOST}:/root/.nvidia-omniverse/logs" \
-  --bind "${OV_HOST}:/root/.local/share/ov" \
-  --bind "${USERDATA_HOST}:${USERDATA_CONT}" \
+  --env "ACCEPT_EULA=Y" \
+  --env "PRIVACY_CONSENT=Y" \
+  --no-home \
+  -B $(pwd)/project:/workspace/project \
+  -B $(pwd)/isaac_cache/kit:/isaac-sim/kit/cache \
+  -B $(pwd)/isaac_cache/kit_data:/isaac-sim/kit/data \
+  -B $(pwd)/isaac_cache/ov:/root/.cache/ov \
+  -B $(pwd)/isaac_cache/pip:/root/.cache/pip \
+  -B $(pwd)/isaac_cache/glcache:/root/.cache/nvidia/GLCache \
+  -B $(pwd)/isaac_cache/computecache:/root/.nv/ComputeCache \
+  -B $(pwd)/isaac_cache/logs:/root/.nvidia-omniverse/logs \
+  -B $(pwd)/isaac_cache/data:/root/.local/share/ov/data \
+  -B $(pwd)/isaac_cache/documents:/root/Documents \
   "$SIF" \
   -c 'echo "=== Container GPU check ==="; nvidia-smi | head -n 20 || echo "nvidia-smi failed (likely not on a GPU node)"; echo; exec bash -l'

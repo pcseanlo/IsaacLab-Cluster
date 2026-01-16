@@ -1,6 +1,6 @@
 # RobotArena Isaac Sim Setup
 
-This repository contains the setup and configuration for running [RobotArena](https://github.com/simpler-env/RobotArena) with NVIDIA Isaac Sim 5.1 using Apptainer (Singularity) containers.
+This repository contains the setup and configuration for running [RobotArena](https://github.com/simpler-env/RobotArena) with NVIDIA Isaac Sim 5.1.0 and Isaac Lab 2.3.0 using Apptainer (Singularity) containers.
 
 ## Overview
 
@@ -9,15 +9,11 @@ This setup provides an isolated containerized environment for running Isaac Sim,
 ## Repository Structure
 
 ```
-robotarena_issacsim/
+IssacSim-Cluster/
 ├── setup/
-│   ├── install.sh          # Script to download Isaac Sim container
+│   ├── install.sh          # Script to download container image
 │   ├── up.sh               # Script to launch the container
-│   ├── cache/              # Container cache directory (auto-created)
-│   ├── logs/               # Isaac Sim logs (auto-created)
-│   └── ov/                 # Omniverse data (auto-created)
-├── issacsim/
-│   └── isaacsim_5.1.sif    # Isaac Sim 5.1 container image
+│   └── execute.sh          # Script to execute the command in the container
 └── README.md               # This file
 ```
 
@@ -39,21 +35,21 @@ cd setup
 bash install.sh
 ```
 
-This will download the `isaacsim_5.1.sif` container image from NVIDIA's container registry to `issacsim/isaacsim_5.1.sif`.
+This will download the `isaac-lab-2.3.0.sif` container image from NVIDIA's container registry. You change the path inside the script to your deisred download location.
 
 ### 2. Verify Container
 
 Ensure the container file exists:
 
 ```bash
-ls -lh issacsim/isaacsim_5.1.sif
+ls -lh ${YOUR_DOWNLOAD_PATH}/isaac-lab-2.3.0.sif
 ```
 
 ## Usage
 
 ### Launching the Container
 
-From the `setup/` directory, run:
+We provide 2 running scripts `setup/` directory:
 
 ```bash
 bash up.sh
@@ -61,24 +57,36 @@ bash up.sh
 
 This script will:
 - Check for GPU availability on the host
-- Create necessary directories (cache, logs, ov)
 - Launch an Apptainer shell with:
   - GPU support (`--nv`)
   - Persistent cache bindings
-  - Your workspace mounted at `/workspace`
+  - Your workspace mounted at `/workspace/project`
   - Isaac Sim logs and Omniverse data directories
+
+```bash
+bash execute.sh
+```
+
+This script will:
+- Launch an Apptainer with:
+  - GPU support (`--nv`)
+  - Persistent cache bindings
+  - Your workspace mounted at `/workspace/project`
+  - Execute the command (the last line of the scripts) inside the container
 
 ### Container Environment
 
 Once inside the container, you'll have:
-- **Working directory**: `/workspace` (maps to `/data/user_data/yjangir/yash`)
-- **Cache**: `/root/.cache` (persists on host)
-- **Logs**: `/root/.nvidia-omniverse/logs` (persists on host)
-- **Omniverse data**: `/root/.local/share/ov` (persists on host)
+- **Working directory**: `/workspace/project` (maps to your desired binding location)
 
-### Running Isaac Sim
 
-Inside the container, you can run Isaac Sim applications and scripts. The container includes all necessary dependencies and CUDA libraries.
+### Running Isaac Lab
+
+Inside the container, you can run Isaac Lab applications and scripts. The container includes all necessary dependencies and CUDA libraries.
+
+To run `python` command inside the container, please use `/isaac-sim/python.sh` for that
+
+The `isaaclab` resource folder will be at `/workspace/isaaclab`
 
 ## Integration with RobotArena
 
@@ -134,7 +142,7 @@ If you see "Could not find container":
 ### Permission Issues
 
 If you encounter permission errors:
-- Ensure cache/logs/ov directories are writable
+- Ensure isaac_cache/ directories are writable
 - Check that your user has access to the workspace directory
 
 ## Related Projects
@@ -142,6 +150,7 @@ If you encounter permission errors:
 - [RobotArena](https://github.com/simpler-env/RobotArena): Main benchmarking framework
 - [SimplerEnv](https://github.com/simpler-env/SimplerEnv): Simulated manipulation environments
 - [NVIDIA Isaac Sim](https://developer.nvidia.com/isaac-sim): Official Isaac Sim documentation
+- [NVIDIA Isaac Lab](https://isaac-sim.github.io/IsaacLab/main/index.html): Official Isaac Lab documentation
 
 ## Notes
 
